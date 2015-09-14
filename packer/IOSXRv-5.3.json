@@ -1,0 +1,37 @@
+{
+   "variables": {
+      "version": "Unknown",
+      "ram": "2048",
+      "boot_time":"3m00s",
+      "serial_port_path": "/Users/dbarroso/iosxrv_packer.pipe"
+   },
+   "post-processors": [
+     {
+       "type": "vagrant",
+       "output": "../builds/IOSXRv_{{user `version`}}_{{.Provider}}.box",
+       "vagrantfile_template": "vagrantfile_templates/IOSXRv.rb"
+      }
+   ],
+   "builders": [
+      {
+          "boot_wait": "{{user `boot_time`}}",
+          "communicator": "none",
+          "ssh_skip_nat_mapping": true,
+          "type": "virtualbox-ovf",
+          "name" : "IOSXRv",
+          "vm_name": "IOSXRv-{{user `version`}}",
+          "headless" : "True",
+          "source_path": "source/IOSXRv.ovf",
+          "output_directory" : "IOSXRv-{{user `version`}}",
+          "guest_additions_mode" : "disable",
+          "vboxmanage": [
+              [ "modifyvm","{{.Name}}","--memory","{{user `ram`}}" ],
+              [ "modifyvm","{{.Name}}","--cpus","1" ],
+              [ "modifyvm","{{.Name}}","--nic1","nat" ],
+              [ "modifyvm","{{.Name}}","--nicpromisc1","allow-all" ],
+              [ "modifyvm","{{.Name}}","--uart1", "0x3F8", "4"],
+              [ "modifyvm","{{.Name}}","--uartmode1", "server", "{{user `serial_port_path`}}" ]
+          ]
+      }
+   ]
+}
